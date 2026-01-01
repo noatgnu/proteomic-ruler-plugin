@@ -94,6 +94,7 @@ execution:
     ruler_output: "--output"
   requirements:
     python: ">=3.11"
+    pythonRequirementsFile: "requirements.txt"
 
 example:
   enabled: true
