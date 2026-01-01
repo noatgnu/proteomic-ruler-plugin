@@ -3,7 +3,7 @@
 
 ## Installation
 
-**[⬇️ Click here to install in Cauldron](http://localhost:42069/install?repo=https%3A%2F%2Fgithub.com%2Fnoatgnu%2Fproteomic-ruler-plugin)** _(requires Cauldron to be running)_
+**[⬇️ Click here to install in Cauldron](http://localhost:50060/install?repo=https%3A%2F%2Fgithub.com%2Fnoatgnu%2Fproteomic-ruler-plugin)** _(requires Cauldron to be running)_
 
 > **Repository**: `https://github.com/noatgnu/proteomic-ruler-plugin`
 
