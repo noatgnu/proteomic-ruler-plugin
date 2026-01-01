@@ -1,0 +1,105 @@
+plugin:
+  id: "proteomic-ruler"
+  name: "Proteomic Ruler"
+  description: "Estimate protein copy numbers and concentrations from deep profile mass spectrometry experiments using the Proteomic Ruler algorithm. Calculates copy numbers per cell, concentrations (nM), mass fractions, and mole fractions without spike-in standards."
+  version: "0.1.0"
+  author: "Toan Phung"
+  category: "analysis"
+  subcategory: "quantification"
+  icon: "analytics"
+  repository: "https://github.com/noatgnu/proteomic-ruler-plugin"
+
+runtime:
+  environments: ["python"]
+  entrypoint: "ruler.py"
+
+inputs:
+  - name: "input_file"
+    label: "Input Protein Intensities File"
+    type: "file"
+    required: true
+    accept: ".txt,.tsv,.csv"
+    description: "Tab-separated or CSV file containing protein intensities and UniProt accession IDs"
+
+  - name: "accession_id_col"
+    label: "Accession ID Column Name"
+    type: "text"
+    required: true
+    default: "Protein.Ids"
+    placeholder: "Protein.Ids"
+    description: "Column name containing UniProt accession IDs (e.g., Protein.Ids, Majority protein IDs)"
+
+  - name: "mw_column"
+    label: "Molecular Weight Column Name"
+    type: "text"
+    required: false
+    default: "Mass"
+    placeholder: "Mass"
+    description: "Column name containing molecular weight in kDa or Da (leave empty to fetch from UniProt)"
+
+  - name: "intensity_columns"
+    label: "Intensity Columns"
+    type: "column-selector"
+    required: false
+    multiple: true
+    source: "input_file"
+    description: "Select intensity columns for samples. If empty, auto-detects columns matching 'Intensity*' pattern"
+
+  - name: "ploidy"
+    label: "Ploidy Number"
+    type: "number"
+    required: true
+    default: 2
+    min: 1
+    max: 8
+    step: 1
+    description: "Ploidy of the organism (1=haploid, 2=diploid, 3=triploid, etc.)"
+
+  - name: "total_cellular"
+    label: "Total Cellular Protein Concentration (pg/pL)"
+    type: "number"
+    required: true
+    default: 200
+    min: 50
+    max: 500
+    step: 10
+    description: "Total cellular protein concentration in picograms per picoliter (typical: 200 pg/pL)"
+
+  - name: "get_mw"
+    label: "Fetch Molecular Weight from UniProt"
+    type: "boolean"
+    required: false
+    default: false
+    description: "Automatically fetch molecular weights from UniProt if not present in input file (requires internet connection)"
+
+outputs:
+  - name: "ruler_output"
+    path: "ruler_output.txt"
+    type: "data"
+    description: "Proteomic Ruler results with copy numbers, concentrations, and rankings"
+    format: "txt"
+
+execution:
+  argsMapping:
+    input_file: "--input"
+    accession_id_col: "--accession-id-col"
+    mw_column: "--mw-column"
+    intensity_columns: "--intensity-columns"
+    ploidy: "--ploidy"
+    total_cellular: "--total-cellular"
+    get_mw:
+      flag: "--get-mw"
+      when: "true"
+  outputMapping:
+    ruler_output: "--output"
+  requirements:
+    python: ">=3.11"
+
+example:
+  enabled: false
+  values:
+    accession_id_col: "Protein.Ids"
+    mw_column: "Mass"
+    ploidy: 2
+    total_cellular: 200
+    get_mw: false

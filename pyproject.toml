@@ -1,0 +1,20 @@
+[project]
+name = "proteomic-ruler-plugin"
+version = "0.1.0"
+description = "Cauldron plugin for Proteomic Ruler - protein copy number estimation from mass spectrometry data"
+authors = [
+    {name = "Toan Phung", email = "toan.phung@proteo.info"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+license = {text = "MIT"}
+keywords = ["proteomic", "ruler", "mass-spectrometry", "quantification", "cauldron-plugin"]
+
+[project.urls]
+Repository = "https://github.com/noatgnu/proteomic-ruler-plugin"
+Homepage = "https://github.com/noatgnu/proteomic-ruler-plugin"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
