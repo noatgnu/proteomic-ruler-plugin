@@ -126,7 +126,7 @@
 <strong>Category</strong>: analysis<br>
 <strong>Author</strong>: Toan Phung</p>
 <h2 id="description">Description</h2>
-<p>Estimate protein copy numbers and concentrations from deep profile mass spectrometry experiments using the Proteomic Ruler algorithm. Calculates copy numbers per cell, concentrations (nM), mass fractions, and mole fractions without spike-in standards.</p>
+<p>Estimate protein copy numbers and concentrations from deep profile mass spectrometry experiments using the Proteomic Ruler algorithm. Calculates copy numbers per cell, concentrations (nM), mass fractions, and mole fractions without spike-in standards. Based on: Wiśniewski et al. (2014) Mol Cell Proteomics 13:3497-3506. Implementation: <a href="https://github.com/noatgnu/proteomicRuler">https://github.com/noatgnu/proteomicRuler</a></p>
 <h2 id="runtime">Runtime</h2>
 <ul>
 <li>
@@ -253,6 +253,20 @@
 <ul>
 <li><strong>Python Version</strong>: &gt;=3.11</li>
 </ul>
+<h3 id="python-dependencies-external-file">Python Dependencies (External File)</h3>
+<p>Dependencies are defined in: <code>requirements.txt</code></p>
+<ul>
+<li><code>proteomicruler&gt;=0.1.6</code></li>
+<li><code>pandas&gt;=2.2.0</code></li>
+<li><code>scipy&gt;=1.11.0</code></li>
+<li><code>seaborn&gt;=0.13.0</code></li>
+<li><code>uniprotparser&gt;=1.2.0</code></li>
+<li><code>click&gt;=8.1.0</code></li>
+<li><code>matplotlib&gt;=3.7.0</code></li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: When you create a custom environment for this plugin, these dependencies will be automatically installed.</p>
+</blockquote>
 <h2 id="example-data">Example Data</h2>
 <p>This plugin includes example data for testing:</p>
 <pre><code class="language-yaml">  input_file: diann/Reports.pg_matrix.tsv

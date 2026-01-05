@@ -21,7 +21,7 @@
 
 ## Description
 
-Estimate protein copy numbers and concentrations from deep profile mass spectrometry experiments using the Proteomic Ruler algorithm. Calculates copy numbers per cell, concentrations (nM), mass fractions, and mole fractions without spike-in standards.
+Estimate protein copy numbers and concentrations from deep profile mass spectrometry experiments using the Proteomic Ruler algorithm. Calculates copy numbers per cell, concentrations (nM), mass fractions, and mole fractions without spike-in standards. Based on: Wiśniewski et al. (2014) Mol Cell Proteomics 13:3497-3506. Implementation: https://github.com/noatgnu/proteomicRuler
 
 ## Runtime
 
@@ -90,18 +90,32 @@ Automatically fetch molecular weights from UniProt if not present in input file 
 
 - **Python Version**: >=3.11
 
+### Python Dependencies (External File)
+
+Dependencies are defined in: `requirements.txt`
+
+- `proteomicruler>=0.1.6`
+- `pandas>=2.2.0`
+- `scipy>=1.11.0`
+- `seaborn>=0.13.0`
+- `uniprotparser>=1.2.0`
+- `click>=8.1.0`
+- `matplotlib>=3.7.0`
+
+> **Note**: When you create a custom environment for this plugin, these dependencies will be automatically installed.
+
 ## Example Data
 
 This plugin includes example data for testing:
 
 ```yaml
+  input_file: diann/Reports.pg_matrix.tsv
+  accession_id_col: Protein.Ids
   mw_column: 
   intensity_columns: [C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_03.raw]
   ploidy: 2
   total_cellular: 200
   get_mw: true
-  input_file: diann/Reports.pg_matrix.tsv
-  accession_id_col: Protein.Ids
 ```
 
 Load example data by clicking the **Load Example** button in the UI.
