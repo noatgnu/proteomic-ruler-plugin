@@ -23,3 +23,11 @@ Thumbs.db
 # Output files
 *.log
 ruler_output.txt
+
+# Nextflow
+work/
+.nextflow/
+.nextflow.log*
+.nextflow.pid
+results/
+

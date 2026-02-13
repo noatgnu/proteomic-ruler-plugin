@@ -1,0 +1,128 @@
+name: Export to Nextflow
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'plugin.yaml'
+      - '**.py'
+      - '**.R'
+      - 'requirements.txt'
+      - 'Dockerfile'
+  pull_request:
+    paths:
+      - 'plugin.yaml'
+      - '**.py'
+      - '**.R'
+      - 'requirements.txt'
+      - 'Dockerfile'
+
+jobs:
+  validate-nextflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Plugin Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@v2
+
+      - name: Install Cauldron CLI
+        run: |
+          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+
+      - name: Generate Nextflow Pipeline
+        run: |
+          plugin-to-nextflow --plugin plugin.yaml --output .
+
+      - name: Validate Nextflow Syntax
+        run: |
+          nextflow run main.nf -preview
+
+  test-with-examples:
+    runs-on: ubuntu-latest
+    needs: validate-nextflow
+    steps:
+      - name: Checkout Plugin Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@v2
+
+      - name: Install Cauldron CLI
+        run: |
+          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+
+      - name: Generate Nextflow Pipeline
+        run: |
+          plugin-to-nextflow --plugin plugin.yaml --output .
+
+      - name: Check Example Data
+        run: |
+          
+          if [ ! -d "examples/diann" ]; then
+            echo "Warning: examples/diann directory not found"
+            exit 1
+          fi
+          
+          echo "All example directories found"
+
+      - name: Build Container
+        run: |
+          docker build -t cauldron/proteomic-ruler:0.1.0 -f containers/Dockerfile .
+
+      - name: Run Nextflow with Examples
+        run: |
+          nextflow run main.nf \
+          --input_file examples/diann/Reports.pg_matrix.tsv \
+          --accession_id_col 'Protein.Ids' \
+          --mw_column '' \
+          --intensity_columns '[C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_03.raw]' \
+          --ploidy '2' \
+          --total_cellular '200' \
+          --get_mw 'true' \
+          -profile docker \
+          --outdir results
+
+  export-nextflow:
+    runs-on: ubuntu-latest
+    needs: [validate-nextflow, test-with-examples]
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout Plugin Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install Cauldron CLI
+        run: |
+          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+
+      - name: Generate Nextflow Pipeline
+        run: |
+          plugin-to-nextflow --plugin plugin.yaml --output .
+
+      - name: Commit and Push Nextflow Files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add main.nf nextflow.config nextflow_schema.json modules/ containers/ README.md .github/
+          git diff --staged --quiet || git commit -m "Auto-generate Nextflow pipeline from plugin metadata"
+          git push
