@@ -26,6 +26,24 @@ process PROTEOMIC_RULER {
     ARG_LIST=()
 
     
+    # Mapping for mw_column
+    VAL="$mw_column"
+    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
+        ARG_LIST+=("--mw-column" "\$VAL")
+    fi
+    
+    # Mapping for intensity_columns
+    VAL="$intensity_columns"
+    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
+        ARG_LIST+=("--intensity-columns" "\$VAL")
+    fi
+    
+    # Mapping for ploidy
+    VAL="$ploidy"
+    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
+        ARG_LIST+=("--ploidy" "\$VAL")
+    fi
+    
     # Mapping for total_cellular
     VAL="$total_cellular"
     if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
@@ -50,24 +68,6 @@ process PROTEOMIC_RULER {
     VAL="$accession_id_col"
     if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
         ARG_LIST+=("--accession-id-col" "\$VAL")
-    fi
-    
-    # Mapping for mw_column
-    VAL="$mw_column"
-    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
-        ARG_LIST+=("--mw-column" "\$VAL")
-    fi
-    
-    # Mapping for intensity_columns
-    VAL="$intensity_columns"
-    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
-        ARG_LIST+=("--intensity-columns" "\$VAL")
-    fi
-    
-    # Mapping for ploidy
-    VAL="$ploidy"
-    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
-        ARG_LIST+=("--ploidy" "\$VAL")
     fi
     
     python /app/ruler.py \
