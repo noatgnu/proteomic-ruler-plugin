@@ -1,0 +1,185 @@
+name: Test Slivka Service
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'plugin.yaml'
+      - '**.py'
+      - '**.R'
+      - 'requirements.txt'
+      - 'Dockerfile'
+  pull_request:
+    paths:
+      - 'plugin.yaml'
+      - '**.py'
+      - '**.R'
+      - 'requirements.txt'
+      - 'Dockerfile'
+
+jobs:
+  validate-slivka:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Plugin Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Slivka
+        run: |
+          pip install slivka
+
+      - name: Build Cauldron CLI
+        run: |
+          git clone https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
+          cd /tmp/cauldron-go
+          go build -o /usr/local/bin/plugin-to-slivka ./cmd/plugin-to-slivka
+
+      - name: Generate Slivka Service
+        run: |
+          plugin-to-slivka --plugin plugin.yaml --output slivka-services
+
+      - name: Validate Slivka YAML
+        run: |
+          python -c "
+          import yaml
+          import sys
+          with open('slivka-services/proteomic-ruler.service.yaml', 'r') as f:
+              config = yaml.safe_load(f)
+          required = ['slivka-version', 'name', 'description', 'parameters', 'command', 'args', 'outputs', 'execution']
+          missing = [k for k in required if k not in config]
+          if missing:
+              print(f'Missing required fields: {missing}')
+              sys.exit(1)
+          print('Slivka service YAML is valid')
+          "
+
+  test-with-docker:
+    runs-on: ubuntu-latest
+    needs: validate-slivka
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout Plugin Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Slivka
+        run: |
+          pip install slivka
+
+      - name: Build Cauldron CLI
+        run: |
+          git clone https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
+          cd /tmp/cauldron-go
+          go build -o /usr/local/bin/plugin-to-slivka ./cmd/plugin-to-slivka
+
+      - name: Generate Slivka Service
+        run: |
+          plugin-to-slivka --plugin plugin.yaml --output slivka-services
+
+      - name: Build Plugin Container
+        run: |
+          docker build -t cauldron/proteomic-ruler:0.1.0 -f Dockerfile .
+
+      - name: Setup Slivka Project
+        run: |
+          mkdir -p slivka-project/services
+          cp slivka-services/proteomic-ruler.service.yaml slivka-project/services/
+
+          cat > slivka-project/settings.yml << 'EOF'
+          version: "0.8"
+          directory:
+            jobs: ./jobs
+            logs: ./logs
+            uploads: ./uploads
+          server:
+            host: 127.0.0.1
+            port: 8000
+          mongodb:
+            host: 127.0.0.1
+            port: 27017
+            database: slivka_test
+          EOF
+
+          mkdir -p slivka-project/jobs slivka-project/logs slivka-project/uploads
+          
+          mkdir -p slivka-project/testdata
+          cp -r examples/diann/* slivka-project/testdata/ 2>/dev/null || true
+          
+
+      - name: Start Slivka Server
+        run: |
+          cd slivka-project
+          slivka start server &
+          slivka start scheduler &
+          slivka start local-queue &
+          sleep 10
+
+      - name: Verify Service is Running
+        run: |
+          curl -s http://localhost:8000/api/services | python -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          services = [s['name'] for s in data.get('services', [])]
+          if 'proteomic-ruler' not in services:
+              print(f'Service not found. Available: {services}')
+              sys.exit(1)
+          print('Service proteomic-ruler is running')
+          "
+
+      - name: Submit Test Job
+        run: |
+          cd slivka-project
+          JOB_RESPONSE=$(curl -s -X POST http://localhost:8000/api/services/proteomic-ruler/jobs \
+            -F "input_file=@testdata/Reports.pg_matrix.tsv" \
+            -F "accession_id_col=Protein.Ids" \
+            -F "mw_column=" \
+            -F "intensity_columns=[C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_03.raw]" \
+            -F "ploidy=2" \
+            -F "total_cellular=200" \
+            -F "get_mw=true")
+
+          JOB_ID=$(echo $JOB_RESPONSE | python -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          echo "Job ID: $JOB_ID"
+
+          for i in {1..30}; do
+            STATUS=$(curl -s http://localhost:8000/api/jobs/$JOB_ID | python -c "import sys,json; print(json.load(sys.stdin)['status'])")
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "COMPLETED" ]; then
+              echo "Job completed successfully"
+              exit 0
+            elif [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "ERROR" ]; then
+              echo "Job failed"
+              curl -s http://localhost:8000/api/jobs/$JOB_ID
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Job timed out"
+          exit 1
+

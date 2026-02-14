@@ -26,6 +26,20 @@ process PROTEOMIC_RULER {
     ARG_LIST=()
 
     
+    # Mapping for total_cellular
+    VAL="$total_cellular"
+    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
+        ARG_LIST+=("--total-cellular" "\$VAL")
+    fi
+    
+    # Mapping for get_mw
+    VAL="$get_mw"
+    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
+        if [ "\$VAL" = "true" ]; then
+            ARG_LIST+=("--get-mw")
+        fi
+    fi
+    
     # Mapping for input_file
     VAL="$input_file"
     if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
@@ -54,20 +68,6 @@ process PROTEOMIC_RULER {
     VAL="$ploidy"
     if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
         ARG_LIST+=("--ploidy" "\$VAL")
-    fi
-    
-    # Mapping for total_cellular
-    VAL="$total_cellular"
-    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
-        ARG_LIST+=("--total-cellular" "\$VAL")
-    fi
-    
-    # Mapping for get_mw
-    VAL="$get_mw"
-    if [ -n "\$VAL" ] && [ "\$VAL" != "null" ] && [ "\$VAL" != "[]" ]; then
-        if [ "\$VAL" = "true" ]; then
-            ARG_LIST+=("--get-mw")
-        fi
     fi
     
     python /app/ruler.py \

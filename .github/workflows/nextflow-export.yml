@@ -29,14 +29,25 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.24'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Nextflow
-        uses: nf-core/setup-nextflow@v2
-
-      - name: Install Cauldron CLI
         run: |
-          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+          curl -s https://get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+          nextflow -version
+
+      - name: Build Cauldron CLI
+        run: |
+          git clone https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
+          cd /tmp/cauldron-go
+          go build -o /usr/local/bin/plugin-to-nextflow ./cmd/plugin-to-nextflow
 
       - name: Generate Nextflow Pipeline
         run: |
@@ -56,14 +67,25 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.24'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Nextflow
-        uses: nf-core/setup-nextflow@v2
-
-      - name: Install Cauldron CLI
         run: |
-          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+          curl -s https://get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+          nextflow -version
+
+      - name: Build Cauldron CLI
+        run: |
+          git clone https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
+          cd /tmp/cauldron-go
+          go build -o /usr/local/bin/plugin-to-nextflow ./cmd/plugin-to-nextflow
 
       - name: Generate Nextflow Pipeline
         run: |
@@ -86,13 +108,13 @@ jobs:
       - name: Run Nextflow with Examples
         run: |
           nextflow run main.nf \
-          --input_file examples/diann/Reports.pg_matrix.tsv \
-          --accession_id_col 'Protein.Ids' \
-          --mw_column '' \
           --intensity_columns '[C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-IP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-MockIP_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_BCA_LT-WCL_03.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_01.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_02.raw C:\Raja\DIA-NN searches\June 2022\LT-CBQCA-Test_DIA\RN-DS_220106_Pepide-CBQCA_LT-WCL_03.raw]' \
           --ploidy '2' \
           --total_cellular '200' \
           --get_mw 'true' \
+          --input_file examples/diann/Reports.pg_matrix.tsv \
+          --accession_id_col 'Protein.Ids' \
+          --mw_column '' \
           -profile docker \
           --outdir results
 
@@ -109,11 +131,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.24'
 
-      - name: Install Cauldron CLI
+      - name: Build Cauldron CLI
         run: |
-          go install github.com/noatgnu/cauldron-go/cmd/plugin-to-nextflow@latest
+          git clone https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
+          cd /tmp/cauldron-go
+          go build -o /usr/local/bin/plugin-to-nextflow ./cmd/plugin-to-nextflow
 
       - name: Generate Nextflow Pipeline
         run: |
